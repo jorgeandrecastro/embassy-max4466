@@ -1,116 +1,79 @@
 # embassy-max4466
 
-Driver async `no_std` pour le capteur **MAX4466** (microphone amplifié à gain réglable),
-basé sur [Embassy](https://embassy.dev/).
+Driver async `no_std` pour le capteur microphone **MAX4466**, basé sur [Embassy](https://embassy.dev).
 
-## Fonctionnalités
+## Features
 
-| Feature          | Par défaut | Description                                            |
-|------------------|:----------:|--------------------------------------------------------|
-| *(core)*         | ✅          | `read_raw`, `read_amplitude`, `read`, `calibrate`      |
-| `filter-smooth`  | ❌          | Filtre passe-bas par moyenne glissante (`SmoothFilter`) |
-| `utils-map`      | ❌          | `map_range`, `to_percent`, `to_db` (dBFS)              |
-| `stats-average`  | ❌          | `RollingStats` : moyenne, variance, RMS, pic            |
-| `noise-gate`     | ❌          | `NoiseGate` : seuil + hold time                        |
-| `full`           | ❌          | Active toutes les features ci-dessus                   |
+| Feature          | Description                                        |
+|------------------|----------------------------------------------------|
+| *(défaut)*       | Valeur ADC brute, aucun filtre                     |
+| `filter-ema`     | Filtre EMA (lissage exponentiel, alpha configurable) |
+| `filter-median`  | Filtre médian (fenêtre glissante de 5 samples)     |
 
-## Installation
+Les deux features sont cumulables.
+
+## Utilisation
+
+### Cargo.toml
 
 ```toml
-[dependencies]
+# Valeur brute uniquement
 embassy-max4466 = { version = "0.1.0" }
 
-# Avec options
-embassy-max4466 = { version = "0.1.0", features = ["filter-smooth", "noise-gate"] }
+# Avec filtre EMA
+embassy-max4466 = { version = "0.1.0", features = ["filter-ema"] }
 
-# Tout activer
-embassy-max4466 = { version = "0.1.0", features = ["full"] }
+# Avec filtre médian
+embassy-max4466 = { version = "0.1.0", features = ["filter-median"] }
+
+# Les deux
+embassy-max4466 = { version = "0.1.0", features = ["filter-ema", "filter-median"] }
 ```
 
-## Exemple minimal
+### Implémentation du trait `AdcReader` (exemple embassy-rp)
 
 ```rust
+use embassy_max4466::driver::AdcReader;
 use embassy_rp::adc::{Adc, Async, Channel};
-use embassy_max4466::Max4466;
 
-#[embassy_executor::task]
-async fn mic_task(adc: Adc<'static, Async>, channel: Channel<'static>) {
-    let mut mic = Max4466::new(adc, channel);
-    mic.calibrate().await; // ~64 ms de calibration
+pub struct RpAdc<'d> {
+    adc: Adc<'d, Async>,
+    channel: Channel<'d>,
+}
 
-    loop {
-        let data = mic.read(50).await;
-        defmt::info!("Amplitude: {}  Raw: {}", data.amplitude, data.raw);
-        embassy_time::Timer::after_millis(100).await;
+impl AdcReader for RpAdc<'_> {
+    async fn read(&mut self) -> u16 {
+        self.adc.read(&mut self.channel).await.unwrap_or(0)
     }
 }
 ```
 
-## Exemple avec toutes les features
+### Exemple complet
 
 ```rust
-use embassy_max4466::{
-    Max4466,
-    filters::SmoothFilter,
-    mapping::{to_db, to_percent},
-    stats::RollingStats,
-    gate::NoiseGate,
-    signals::MIC_SIGNAL,
-};
+use embassy_executor::Spawner;
+use embassy_max4466::{Max4466, signals::MIC_SIGNAL};
 
 #[embassy_executor::task]
-async fn mic_task(adc: Adc<'static, Async>, channel: Channel<'static>) {
-    let mut mic = Max4466::new(adc, channel);
+async fn micro_task(adc: RpAdc<'static>) {
+    let mut mic = Max4466::new(adc);
     mic.calibrate().await;
 
-    let mut filter: SmoothFilter<8> = SmoothFilter::new();
-    let mut stats: RollingStats<32> = RollingStats::new();
-    let mut gate = NoiseGate::with_hold(150, 5);
-
     loop {
-        let amp = mic.read_amplitude(50).await;
-
-        let smoothed = filter.feed(amp);
-        stats.feed(smoothed);
-
-        if let Some(signal) = gate.process(smoothed) {
-            let db  = to_db(signal, 4095);
-            let pct = to_percent(signal, 4095);
-            defmt::info!("{}% ({}dBFS)  rms={}", pct, db, stats.rms());
-        }
-
-        // Publier pour d'autres tâches Embassy
-        MIC_SIGNAL.signal(mic.read(1).await);
-
-        embassy_time::Timer::after_millis(100).await;
+        let amplitude = mic.read_amplitude(50).await;
+        defmt::info!("Amplitude: {}", amplitude);
     }
 }
-```
-
-## Signal global
-
-```rust
-use embassy_max4466::signals::MIC_SIGNAL;
 
 #[embassy_executor::task]
-async fn display_task() {
+async fn afficher_signal() {
     loop {
         let data = MIC_SIGNAL.wait().await;
-        // utiliser data.amplitude, data.raw
+        defmt::info!("raw={} amplitude={}", data.raw, data.amplitude);
     }
 }
-```
-
-## Calibration
-
-La calibration établit le DC offset du MAX4466 (typiquement VCC/2 ≈ 2048 en 12 bits).
-À appeler dans un environnement silencieux avant la première lecture.
-
-```rust
-mic.calibrate().await;         // 128 échantillons, ~64 ms
-mic.calibrate_n(256).await;    // 256 échantillons, ~128 ms
 ```
 
 ## Licence
 
-GPL-2.0-or-later — Copyright (C) 2026 Jorge Andre Castro
+GPL-2.0-or-later

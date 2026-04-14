@@ -31,6 +31,6 @@ use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, signal::Signal}
 ///
 /// # Comportement
 ///
-/// - `signal()` — publie une nouvelle mesure (écrase la précédente si non lue)
-/// - `wait()`   — attend de manière asynchrone la prochaine mesure disponible
+/// - `signal()`  publie une nouvelle mesure (écrase la précédente si non lue)
+/// - `wait()`    attend de manière asynchrone la prochaine mesure disponible
 pub static MIC_SIGNAL: Signal<CriticalSectionRawMutex, MicData> = Signal::new();

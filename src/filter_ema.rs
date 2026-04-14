@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Jorge Andre Castro
 // GPL-2.0-or-later
 
-//! Filtre EMA (Exponential Moving Average) — feature `filter-ema`.
+//! Filtre EMA (Exponential Moving Average)  feature `filter-ema`.
 //!
 //! Lisse le signal ADC en appliquant :
 //!

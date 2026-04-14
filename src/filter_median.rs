@@ -64,7 +64,7 @@ impl Default for MedianFilter {
     }
 }
 
-/// Tri par insertion en place — O(n²) mais n ≤ 5, donc parfaitement adapté.
+/// Tri par insertion en place  O(n²) mais n ≤ 5, donc parfaitement adapté.
 fn insertion_sort(arr: &mut [u16]) {
     let n = arr.len();
     for i in 1..n {

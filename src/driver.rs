@@ -4,7 +4,7 @@
 //! Driver principal `Max4466`.
 //!
 //! Utilise directement les types ADC d'Embassy via des génériques contraints
-//!  par le trait `AdcReader` défini ici — pas d'abstraction maison.
+//!  par le trait `AdcReader` défini ici pas d'abstraction maison.
 
 use embassy_time::Timer;
 

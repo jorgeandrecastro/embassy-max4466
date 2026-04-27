@@ -1,6 +1,6 @@
 [package]
 name          = "embassy-max4466"
-version       = "0.1.1"
+version       = "0.1.2"
 edition       = "2024"
 authors = ["Jorge Andre Castro <georgeandrec@gmail.com>"]
 license       = "GPL-2.0-or-later"
@@ -28,8 +28,8 @@ filter-ema    = []
 filter-median = []
 
 [dependencies]
-embassy-time = { version = "0.4.0" }
-embassy-sync = { version = "0.6.0" }
+embassy-time = { version = ">=0.3, <0.6" }
+embassy-sync = {version = ">=0.4, <0.9"}
 
 # embedded-hal uniquement pour le trait abstrait AdcChannel si nécessaire
 # Le driver cible directement embassy-rp/embassy-stm32 via généricité

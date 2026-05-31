@@ -31,7 +31,7 @@ dependencies = [
 
 [[package]]
 name = "embassy-max4466"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "embassy-sync",
  "embassy-time",

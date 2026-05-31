@@ -6,6 +6,14 @@
 
 Driver async `no_std` pour le capteur microphone **MAX4466**, basé sur [Embassy](https://embassy.dev).
 
+# La version 0.2.0 de embassy-max4466
+est adoptée afin de stabiliser l’intégration avec l’écosystème Embassy et de réduire les conflits de dépendances. Cette mise à jour vise à améliorer la cohérence avec les autres crates du projet et à fiabiliser l’utilisation du driver microphone dans un environnement embarqué.
+
+```[dependencies]
+embassy-time = "0.5"
+embassy-sync = "0.8"
+```
+
 # La version 0.1.1 fournit un exemple clé en main 
 
 ## Features
@@ -25,16 +33,16 @@ Les deux features sont cumulables.
 
 ```toml
 # Valeur brute uniquement
-embassy-max4466 = { version = "0.1.2" }
+embassy-max4466 = { version = "0.2.0" }
 
 # Avec filtre EMA
-embassy-max4466 = { version = "0.1.2", features = ["filter-ema"] }
+embassy-max4466 = { version = "0.2.0", features = ["filter-ema"] }
 
 # Avec filtre médian
-embassy-max4466 = { version = "0.1.2", features = ["filter-median"] }
+embassy-max4466 = { version = "0.2.0", features = ["filter-median"] }
 
 # Les deux
-embassy-max4466 = { version = "0.1.2", features = ["filter-ema", "filter-median"] }
+embassy-max4466 = { version = "0.2.0", features = ["filter-ema", "filter-median"] }
 ```
 
 ### Implémentation du trait `AdcReader` (exemple embassy-rp)

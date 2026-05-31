@@ -28,8 +28,8 @@ filter-ema    = []
 filter-median = []
 
 [dependencies]
-embassy-time = { version = ">=0.3, <0.6" }
-embassy-sync = {version = ">=0.4, <0.9"}
+embassy-time = "0.5"
+embassy-sync = "0.8"
 
 # embedded-hal uniquement pour le trait abstrait AdcChannel si nécessaire
 # Le driver cible directement embassy-rp/embassy-stm32 via généricité
